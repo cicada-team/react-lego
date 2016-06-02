@@ -23,6 +23,68 @@ export default wrap({
 });
 ```
 
+## API
+
+### wrap
+
+> ({ ... }) => ReactComponent
+
+`wrap` 接收一个一个对象，并包装为一个 ReactComponent。
+
+### expose
+
+> (fn) => fn
+
+标记一个函数是否对外暴露为一个 API：
+
+```jsx
+// ./Input.jsx
+// import ...
+
+const onChange = expose(privateOnChange);
+function render({ props }) {
+  return <input value={props.value} onChange={props.onChange} />;
+}
+
+export default wrap({ render, onChange });
+
+// ./App.jsx
+import Input from './Input';
+
+const log = console.log.bind(console);
+ReactDOM.render(<Input onChange={log} />)
+```
+
+使用 `expose` 包装 `privateOnChagne` 后，当 `input` 的 `onChange` 事件触发时，会先调用 `privateOnChange`，再调用外部的传入的 `log`。若不使用 `expose` 包装，则仅调用 `privateOnChange`。
+
+### reduce
+
+> (fn1, fn2) => fn1
+
+`reduce` 与 `expose` 一起使用才有意义，用于简化对外暴露的 API 的参数。
+
+```jsx
+const onChange = expose(reduce(
+  privateOnChange,
+  // 这样包装后，`expose` 例子中的 `log` 函数会得到大写后的 `value`
+  ({ props }, e) => e.target.value.toUpperCase()
+));
+```
+
+`fn2` 的默认值为：
+
+```js
+function (_, e) {
+  // To support custom element
+  if (!e || !e.target) {
+    return e;
+  }
+  const { target } = e;
+  return target.type === 'checkbox' ?
+    target.checked : target.value;
+}
+```
+
 ## Specification
 
 依照本规范开发的组件，必须是 stateless 且所有的函数必须为 pure function。
