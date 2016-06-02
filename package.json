@@ -1,8 +1,11 @@
 {
   "name": "react-lego",
-  "version": "0.1.0-beta.0",
+  "version": "0.1.0-beta.2",
   "description": "A better way to create React component",
   "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "clean": "rimraf lib",
     "lint": "eslint src test examples",
@@ -16,8 +19,7 @@
     "preversion": "npm run clean && npm run check",
     "version": "npm run build",
     "postversion": "git push && git push --tags && npm run clean && npm run docs:publish",
-    "prepublish": "npm run clean && npm run build",
-    "pub": "npm run prepublish && npm run publish"
+    "prepublish": "npm run clean && npm run build"
   },
   "repository": {},
   "keywords": ["React", "Component"],
