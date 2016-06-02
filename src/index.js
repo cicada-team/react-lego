@@ -1,73 +1,84 @@
-import React from 'react'
+import React from 'react';
+import * as utils from './utils';
 
-function mapValues(obj, handler) {
-  const result = {}
-  Object.keys(obj).forEach(key=> {
-    result[key] = handler(obj[key], key)
-  })
-  return result
-}
-
-function pick(obj, names) {
-  const output = {}
-
-  if( typeof names === 'function' ) {
-    for( let name in obj ) {
-      if( names(obj[name], name) ) {
-        output[name] =  obj[name]
-      }
-    }
-  }else {
-    names.forEach(name=> {
-      output[name] =  obj[name]
-    })
+function defaultReduceFn(_, e) {
+  // support custom element
+  if (!e || !e.target) {
+    return e;
   }
-
-  return output
+  const { target } = e;
+  return target.type === 'checkbox' ?
+    target.checked : target.value;
 }
 
+export function wrap(DeclarativeComponent) {
+  const {
+    propTypes = {},
+    defaultProps = {},
+    initialize = () => ({}),
+    render,
+  } = DeclarativeComponent;
 
-export function wrap( DeclarativeComponent ) {
-  const { initialize, render } = DeclarativeComponent
+  const reduceFunctions = utils.pick(
+    DeclarativeComponent,
+    (item, name) => (typeof item === 'function') && name !== 'render'
+  );
 
-  const reduceFunctions = pick( DeclarativeComponent, ( item, name)=>{
-    return (typeof item === 'function') && name !== 'render'
-  })
+  class LegoWrapper extends React.Component {
+    constructor(props) {
+      super(props);
 
-  return React.createClass({
-    getInitialState() {
-      return initialize(this.props)
-    },
+      this.ctx = {
+        instance: initialize(),
+      };
+
+      this.state = defaultProps;
+    }
+
     render() {
+      const reduceFunctionsAsProps = utils.mapValues(
+        reduceFunctions,
+        (fn, name) => (...args) => {
+          const newState = fn({
+            ...this.ctx,
+            props: { ...this.state, ...this.props },
+          }, ...args);
+          this.setState(newState);
 
-      const reduceFunctionsAsProps =  mapValues( reduceFunctions, (fn, name)=>(...args)=>{
-        const newState = fn(this.props, this.state, ...args)
-        this.setState( newState )
-        if( fn.expose === true && this.props[name] !== undefined ) {
-          // TODO add picker
-          const reduceFn = fn.reduce || (x=>x)
-          this.props[name]( reduceFn(newState ))
+          if (fn.expose === true && this.props[name] !== undefined) {
+            // TODO add picker
+            const reduceFn = fn.reduce || defaultReduceFn;
+            this.props[name](reduceFn({
+              ...this.ctx,
+              props: newState,
+            }, ...args));
+          }
         }
-
-      })
+      );
 
       const props = {
+        ...this.state,
         ...this.props,
         ...reduceFunctionsAsProps,
-        children: this.props.children
-      }
-
-      return render(props, this.state)
+        children: this.props.children,
+      };
+      return render({
+        ...this.ctx,
+        props,
+      });
     }
-  })
+  }
+  LegoWrapper.propTypes = propTypes;
+
+  return LegoWrapper;
 }
 
 export function expose(fn) {
-  fn.expose = true
-  return fn
+  fn.expose = true;
+  return fn;
 }
 
 export function reduce(fn, reduceFn) {
-  fn.reduce = reduceFn
-  return fn
+  fn.reduce = reduceFn;
+  return fn;
 }
