@@ -16,7 +16,8 @@
     "preversion": "npm run clean && npm run check",
     "version": "npm run build",
     "postversion": "git push && git push --tags && npm run clean && npm run docs:publish",
-    "prepublish": "npm run clean && npm run build"
+    "prepublish": "npm run clean && npm run build",
+    "pub": "npm run prepublish && npm run publish"
   },
   "repository": {},
   "keywords": ["React", "Component"],
