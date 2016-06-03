@@ -134,6 +134,12 @@ function render({ props }) {
 export default wrap({ render, onChange });
 ```
 
+## Advantages
+
+* 可测试，所有的函数都是纯函数，只要 mock 入参并对比返回值即可。
+* 易与 Redux、Mobx 等的结合，通过不同的 wrap 函数适配到不同的框架上。
+* 高扩展，可以通过覆写 `render` 等函数，定制组件。
+
 ## License
 
 MIT
