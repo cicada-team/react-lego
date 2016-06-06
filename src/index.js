@@ -1,5 +1,9 @@
+/* eslint-disable no-param-reassign */
+
 import React from 'react';
 import * as utils from './utils';
+
+export const ReactComponentFunctionNames = ['render'];
 
 function defaultReduceFn(_, e) {
   // support custom element
@@ -11,6 +15,13 @@ function defaultReduceFn(_, e) {
     target.checked : target.value;
 }
 
+export function pickReduceFunctions(DeclarativeComponent) {
+  return utils.pick(
+    DeclarativeComponent,
+    (item, name) => (typeof item === 'function') && ReactComponentFunctionNames.indexOf(name) === -1
+  );
+}
+
 export function wrap(DeclarativeComponent) {
   const {
     propTypes = {},
@@ -19,10 +30,7 @@ export function wrap(DeclarativeComponent) {
     render,
   } = DeclarativeComponent;
 
-  const reduceFunctions = utils.pick(
-    DeclarativeComponent,
-    (item, name) => (typeof item === 'function') && name !== 'render'
-  );
+  const reduceFunctions = pickReduceFunctions(DeclarativeComponent);
 
   class LegoWrapper extends React.Component {
     constructor(props) {
@@ -82,3 +90,4 @@ export function reduce(fn, reduceFn) {
   fn.reduce = reduceFn;
   return fn;
 }
+

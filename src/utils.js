@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-syntax*/
+
 export function mapValues(obj, handler) {
   const result = {};
   Object.keys(obj).forEach(key => {
