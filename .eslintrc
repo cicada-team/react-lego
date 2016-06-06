@@ -4,17 +4,17 @@
     "browser": true,
     "node": true,
     "mocha": true,
-    "es6": true,
+    "es6": true
   },
   "parserOptions": {
     "ecmaVersion": 6,
     "ecmaFeatures": {
       "jsx": true,
-      "experimentalObjectRestSpread": true,
-    },
+      "experimentalObjectRestSpread": true
+    }
   },
   "plugins": [
     "react",
-    "babel",
-  ],
+    "babel"
+  ]
 }
