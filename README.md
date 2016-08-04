@@ -29,20 +29,25 @@ export default wrap({
 
 > ({ ... }) => ReactComponent
 
-`wrap` 接收一个对象，并包装为一个 ReactComponent。
+`wrap` 接收一个对象，并将其包装为一个 ReactComponent。
 
-### expose
+### reduce
 
-> (fn) => fn
+> (fn1[, fn2]) => fn1
 
-标记一个函数是否对外暴露为一个 API：
+标记 `fn1` 为 [Reduce Function](https://github.com/sskyy/react-lego#reduce-function)。当 Reduce Function 被调用时，会尝试调用 owner 传入的同名函数，该同名函数的参数为 `fn2` 的返回值。
 
 ```jsx
 // ./Input.jsx
 // import ...
 
-const onChange = expose(privateOnChange);
+const onChange = reduce(
+  (_, e) => ({ value: e.target.value }),
+  (_, e) => e.target.value.toUpperCase()
+);
+
 function render({ props }) {
+  // 调用 onChange 后，会更新 Redux 之类的 state 中的值，该值为用户输入的值。
   return <input value={props.value} onChange={props.onChange} />;
 }
 
@@ -52,23 +57,8 @@ export default wrap({ render, onChange });
 import Input from './Input';
 
 const log = console.log.bind(console);
+// log 得到的值是经过 `fn2` 处理的值。
 ReactDOM.render(<Input onChange={log} />)
-```
-
-使用 `expose` 包装 `privateOnChagne` 后，当 `input` 的 `onChange` 事件触发时，会先调用 `privateOnChange`，再调用外部的传入的 `log`。若不使用 `expose` 包装，则仅调用 `privateOnChange`。
-
-### reduce
-
-> (fn1, fn2) => fn1
-
-`reduce` 与 `expose` 一起使用才有意义，用于简化对外暴露的 API 的参数。
-
-```jsx
-const onChange = expose(reduce(
-  privateOnChange,
-  // 这样包装后，`expose` 例子中的 `log` 函数会得到大写后的 `value`
-  ({ props }, e) => e.target.value.toUpperCase()
-));
 ```
 
 `fn2` 的默认值为：
@@ -91,7 +81,7 @@ function (_, e) {
 
 ### `render`
 
-> ({ props }) => ReactElement
+> ({ props, context }) => ReactElement
 
 `render` 相当于 [React Stateless Functions](https://facebook.github.io/react/docs/reusable-components.html#stateless-functions)，不同的地方在于，第一个参数并非 `props`，而是一个包含 `props` 和 `context` 的对象。
 
@@ -107,6 +97,12 @@ function (_, e) {
 
 即 React 中用于设置默认属性的 [`defaultProps`](https://facebook.github.io/react/docs/reusable-components.html#default-prop-values)。
 
+### `contextTypes`
+
+> Object
+
+即 React 中的用于声明所需 `context` 的 [`contextTypes`](https://facebook.github.io/react/docs/context.html)。
+
 ### Lifecycle Function
 
 > ({ props, context }, ...args) => nextProps
@@ -117,10 +113,11 @@ function (_, e) {
 
 > ({ props, context }, ...args) => nextProps
 
-传给 `wrap` 的对象中，除了 `render` 和 Lifecycle 以外的函数，视为 reduce function。
+传给 `wrap` 的对象中，被 `reduce` 标记过的函数将被视为 Reduce Function。
 
-* Reduce function 的第一个参数与 `render` 一致，剩余的参数为调用这个 reduce function 时传入的参数。
+* Reduce function 的第一个参数与 `render` 一致，剩余的参数为调用这个 Reduce Function 时传入的参数。
 * Reduce function 的返回值为一个对象，与外部传入的 `props` 合并后，再传给 `render`。
+* Reduce function 被调用时，会尝试调用 owner 传入的同名函数。
 
 Reduce function 作为 event handler：
 
