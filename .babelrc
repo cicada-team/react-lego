@@ -1,0 +1,14 @@
+{
+  "presets": [
+    "react",
+    "stage-0"
+  ],
+  "plugins": [
+    ["module-resolver", {
+      "root": ["./"],
+      "alias": {
+        "@cicada/react-lego": "./src"
+      }
+    }]
+  ]
+}

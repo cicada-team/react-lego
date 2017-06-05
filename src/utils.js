@@ -8,12 +8,18 @@ export function mapValues(obj, handler) {
   return result;
 }
 
+export function each(obj, fn) {
+  return keys(obj).forEach((k) => {
+    fn(obj[k], k)
+  })
+}
+
 export function pick(obj, names) {
   const output = {};
 
   if (typeof names === 'function') {
     for (const name in obj) {
-      if (names(obj[name], name)) {
+      if (names(obj[name], name, obj)) {
         output[name] = obj[name];
       }
     }
@@ -25,3 +31,15 @@ export function pick(obj, names) {
 
   return output;
 }
+
+export function inject(fn, createArgsToInject, spread = false) {
+  return (...runtimeArgs) => {
+    const injectArgs = createArgsToInject(...runtimeArgs)
+    return spread ? fn(...injectArgs, ...runtimeArgs) : fn(injectArgs, ...runtimeArgs)
+  }
+}
+
+export function partialRight(fn, ...argv) {
+  return (...rest) => fn.call(this, ...rest, ...argv)
+}
+

@@ -1,93 +1,137 @@
 /* eslint-disable no-param-reassign */
 
 import React from 'react';
-import * as utils from './utils';
+import { pick, mapValues, inject }  from './utils';
+import cloneDeep from 'lodash/cloneDeep'
 
-export const ReactComponentFunctionNames = ['render'];
+export const ReactComponentFunctionNames = [
+  'componentDidMount',
+  'componentWillUnmount',
+  'componentDidUpdate',
+  'shouldComponentUpdate',
+];
 
-function defaultReduceFn(_, e) {
-  // support custom element
-  if (!e || !e.target) {
-    return e;
-  }
-  const { target } = e;
-  return target.type === 'checkbox' ?
-    target.checked : target.value;
+function normalizeListener(listener) {
+  if (listener === undefined) return
+  return Array.isArray(listener) ? listener : [listener]
 }
 
-export function pickReduceFunctions(DeclarativeComponent) {
-  return utils.pick(
-    DeclarativeComponent,
-    (item, name) => (typeof item === 'function') && ReactComponentFunctionNames.indexOf(name) === -1
-  );
+function normalizeListenerResult(result) {
+  return Array.isArray(result) ? result : [result]
 }
 
 export function wrap(DeclarativeComponent) {
   const {
-    propTypes = {},
-    defaultProps = {},
+    displayName,
+    defaultStateTypes = {},
+    defaultState = {},
+    defaultListeners = {},
+    intercepters = [],
+    defaultWrappers = {},
     initialize = () => ({}),
     render,
   } = DeclarativeComponent;
 
-  const reduceFunctions = pickReduceFunctions(DeclarativeComponent);
-
   class LegoWrapper extends React.Component {
+    static displayName = displayName
     constructor(props) {
-      super(props);
+      super(props)
 
-      this.ctx = {
-        instance: initialize(),
-      };
+      this.instance = initialize()
+      this.setupLifeCycles()
 
-      this.state = defaultProps;
+      this.setupListeners()
+      this.setupIntercepters()
+      const stateValueNames = Object.keys(defaultStateTypes)
+      this.state = {...cloneDeep(defaultState), ...pick(props, (_, name) => stateValueNames.includes(name))}
+    }
+
+    pickListenerArg = () => {
+      return pick(this, ['state', 'instance'])
+    }
+
+    pickRenderArg = () => {
+      return pick(this, ['state', 'instance', 'listeners', 'intercepters'])
+    }
+
+    setupLifeCycles() {
+      ReactComponentFunctionNames.forEach(name => {
+        if (DeclarativeComponent[name] !== undefined) {
+          this[name] = inject(DeclarativeComponent[name], this.pickRenderArg)
+        }
+      })
+    }
+
+    setupListeners() {
+      this.listeners = mapValues(defaultListeners, (defaultListener, name) => {
+        return (...runtimeArgs) => {
+          const listenerArg = this.pickListenerArg()
+          const normalizedResult = normalizeListener(this.props[name])
+
+          if (normalizedResult=== undefined ) return this.handleListenerResult(defaultListener(listenerArg, ...runtimeArgs))
+
+          const [listener, preventDefault = false, before = false] = normalizedResult
+          if (preventDefault === true) return listener !== undefined ? this.handleListenerResult((listener(listenerArg, ...runtimeArgs))) : undefined
+
+          if (before === false) {
+            const nextState = defaultListener(listenerArg, ...runtimeArgs)
+            const nextArg = {
+              ...listenerArg,
+              state: {
+                ...listenerArg.state,
+                ...nextState
+              }
+            }
+
+            const listenerResult = listener(nextArg, ...runtimeArgs)
+
+            return this.handleListenerResult(listenerResult === undefined ? nextState : listenerResult)
+          }
+
+          const listenerResult = normalizeListenerResult(listener(listenerArg, ...runtimeArgs))
+          if (listenerResult === undefined) return
+
+          const [nextState={}, preventDefaultOnFly = false] = listenerResult
+          if (preventDefaultOnFly) return this.handleListenerResult(nextState)
+
+          const nextArg = {
+            ...listenerArg,
+            state: {
+              ...listenerArg.state,
+              ...nextState
+            }
+          }
+
+          const defaultListenerResult = defaultListener(nextArg, ...runtimeArgs)
+          return this.handleListenerResult(defaultListenerResult === undefined ? nextState : defaultListenerResult)
+        }
+      })
+    }
+
+    setupIntercepters() {
+      this.intercepters = mapValues(
+        pick(this.props, intercepters),
+        (intercepter) => inject(intercepter, this.pickListenerArg)
+      )
+    }
+
+    handleListenerResult(result) {
+      if (typeof result === 'object') {
+        this.setState(result)
+      }
     }
 
     render() {
-      const reduceFunctionsAsProps = utils.mapValues(
-        reduceFunctions,
-        (fn, name) => (...args) => {
-          const newState = fn({
-            ...this.ctx,
-            props: { ...this.state, ...this.props },
-          }, ...args);
-          this.setState(newState);
-
-          if (fn.expose === true && this.props[name] !== undefined) {
-            // TODO add picker
-            const reduceFn = fn.reduce || defaultReduceFn;
-            this.props[name](reduceFn({
-              ...this.ctx,
-              props: newState,
-            }, ...args));
-          }
-        }
-      );
-
-      const props = {
-        ...this.state,
-        ...this.props,
-        ...reduceFunctionsAsProps,
-        children: this.props.children,
-      };
+      const wrappers = mapValues(defaultWrappers, (wrapper, name) => (this.props[name] === undefined ? wrapper : this.props[name]))
       return render({
-        ...this.ctx,
-        props,
+        ...this.pickRenderArg(),
+        children: this.props.children,
+        wrappers
       });
     }
   }
-  LegoWrapper.propTypes = propTypes;
+
+  LegoWrapper.propTypes = defaultStateTypes;
 
   return LegoWrapper;
 }
-
-export function expose(fn) {
-  fn.expose = true;
-  return fn;
-}
-
-export function reduce(fn, reduceFn) {
-  fn.reduce = reduceFn;
-  return fn;
-}
-
