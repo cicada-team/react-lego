@@ -27,7 +27,7 @@ export function render({state, listeners, children}) {
   return (
     <div>
       {prefix}
-      <input value={state.value} onChange={listeners.onChange}/>
+      <input value={state.value} onChange={listeners.onChange} />
     </div>
   )
 }

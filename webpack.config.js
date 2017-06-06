@@ -2,6 +2,7 @@ const webpack = require('webpack')
 module.exports = {
   entry: {
     basic: './examples/basic/index.js',
+    wrapper: './examples/wrapper/index.js',
   },
   output: {
     filename: '[name].js',
