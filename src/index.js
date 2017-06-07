@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { pick, mapValues, inject }  from './utils';
-import cloneDeep from 'lodash/cloneDeep'
 
 export const ReactComponentFunctionNames = [
   'componentDidMount',
@@ -24,7 +23,7 @@ export function wrap(DeclarativeComponent) {
   const {
     displayName,
     defaultStateTypes = {},
-    defaultState = {},
+    getDefaultState = () => {},
     defaultListeners = {},
     intercepters = [],
     defaultWrappers = {},
@@ -43,7 +42,7 @@ export function wrap(DeclarativeComponent) {
       this.setupListeners()
       this.setupIntercepters()
       const stateValueNames = Object.keys(defaultStateTypes)
-      this.state = {...cloneDeep(defaultState), ...pick(props, (_, name) => stateValueNames.includes(name))}
+      this.state = {...getDefaultState(), ...pick(props, (_, name) => stateValueNames.includes(name))}
     }
 
     pickListenerArg = () => {

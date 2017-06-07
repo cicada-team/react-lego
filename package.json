@@ -1,6 +1,6 @@
 {
   "name": "react-lego",
-  "version": "0.1.0-beta.2",
+  "version": "1.0.0-alpha.1",
   "description": "A better way to create React component",
   "main": "lib/index.js",
   "files": [
@@ -12,14 +12,9 @@
     "lint": "eslint src test examples",
     "eslint-fix": "eslint --fix src test examples",
     "test": "mocha --compilers js:babel/register --recursive",
-    "test:watch": "npm test -- --watch",
-    "test:examples": "babel-node examples/testAll.js",
     "check": "npm run lint && npm run test",
     "build": "babel src --out-dir lib",
-    "build:examples": "babel-node examples/buildAll.js",
-    "preversion": "npm run clean && npm run check",
-    "version": "npm run build",
-    "postversion": "git push && git push --tags && npm run clean && npm run docs:publish"
+    "preversion": "npm run clean && npm run check"
   },
   "repository": {},
   "keywords": [

@@ -6,9 +6,9 @@ export const defaultStateTypes = {
   value: PropTypes.string
 }
 
-export const defaultState = {
+export const getDefaultState = () => ({
   value: ''
-}
+})
 
 export const identifiers = {
   Prefix: id(noop)

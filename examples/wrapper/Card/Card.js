@@ -8,10 +8,10 @@ export const defaultStateTypes = {
   age: PropTypes.number
 }
 
-export const defaultState = {
+export const getDefaultState = () => ({
   name: '',
   age: 0
-}
+})
 
 export const defaultWrappers = {
   Root: styled.div`
