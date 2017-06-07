@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-
 import React from 'react';
 import { pick, mapValues, inject }  from './utils';
 
@@ -25,7 +24,7 @@ export function wrap(DeclarativeComponent) {
     defaultStateTypes = {},
     getDefaultState = () => {},
     defaultListeners = {},
-    intercepters = [],
+    defaultIntercepters = {},
     defaultWrappers = {},
     initialize = () => ({}),
     render,
@@ -109,8 +108,11 @@ export function wrap(DeclarativeComponent) {
 
     setupIntercepters() {
       this.intercepters = mapValues(
-        pick(this.props, intercepters),
-        (intercepter) => inject(intercepter, this.pickListenerArg)
+        defaultIntercepters,
+        (defaultIntercepter, name) => inject(
+          this.props[name] === undefined ? defaultIntercepter : this.props[name],
+          this.pickListenerArg
+        )
       )
     }
 
