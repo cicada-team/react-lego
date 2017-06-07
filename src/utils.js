@@ -1,5 +1,4 @@
 /* eslint-disable no-restricted-syntax*/
-
 export function mapValues(obj, handler) {
   const result = {};
   Object.keys(obj).forEach(key => {
@@ -42,4 +41,3 @@ export function inject(fn, createArgsToInject, spread = false) {
 export function partialRight(fn, ...argv) {
   return (...rest) => fn.call(this, ...rest, ...argv)
 }
-

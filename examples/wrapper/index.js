@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDom from 'react-dom'
 import { wrap } from '@cicada/react-lego'
-import Case from './Case'
+import Case from '../Case'
 import Card  from './Card'
 
 const Root = Card.Root.extend`
