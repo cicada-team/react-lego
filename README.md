@@ -23,14 +23,14 @@ react-lego(以下简称 lego) 相比于传统的 react 组件，最主要的差�
 ```javascript
   export const defaultStateTypes = {/* state 的类型声明 */}
 
-  export const defaultState = {/* 默认的 state */}
+  export const getDefaultState = () => ({/* 默认的 state */})
 
   export function initialize() {
     // 返回一个对象，改对象将作为 instance 参数注入到所有函数中。可将 instance 作为数据缓存
     return {}
   }
 
-  export const interceptors = [/* 声明外部传入的函数类型的属性 */]
+  export const defaultIntercepters = {/* 声明外部传入的函数类型的属性 */}
 
   export const defaultListeners = {
     // 第一参数为外部框架注入。后面的参数即调用 listener 时传入的参数。
@@ -50,7 +50,7 @@ react-lego(以下简称 lego) 相比于传统的 react 组件，最主要的差�
     // 例如 Tabs 下的 TabPane。Input 的 Prefix 这种占位符式的组件需要在这里声明
   }
 
-  export function render({state, children, instance, listeners, wrappers, interceptors}) {
+  export function render({state, children, instance, listeners, wrappers, intercepters}) {
     return <div></div>
   }
  ```
@@ -65,25 +65,25 @@ export const defaultStateTypes = {
 }
 ```
 
-### defaultState
+### getDefaultState
 
 在 lego 中不再区别 state 和 props，所有会影响到组件渲染的数据，都应该写成 state。state 即可由内部 listener 修改，也可由外部传入。在设计 state 时，应该遵循一下原则:
 
  - state 的各个值之间尽量不要存在依赖关系。如果存在，应该拆成更原子的多个值。或者合并成一个值。
  - 优化性能的缓存数据应该存在 instance 上。
 
-注意，state 中不应该包含函数，要由外部传如的函数应该使用 interceptors。
+注意，state 中不应该包含函数，要由外部传如的函数应该使用 intercepters。
 
 ### initialize
 
 组件初始化时调用，放回的对象会贯穿组件的整个生命周期。可以在对象上存放缓存数据。
 
-### interceptors
+### defaultIntercepters
 
-当组件需要获取外部传入函数，并且根据函数的返回值再进行渲染或者运算时，应该声明需要的 interceptors 的名字。例如 Upload 组件通常会一个 `beforeUpload` 函数来判断是否要上传。那么再组件中就应该声明:
+当组件需要获取外部传入函数，并且根据函数的返回值再进行渲染或者运算时，应该声明需要的 intercepters 的名字。例如 Upload 组件通常会一个 `beforeUpload` 函数来判断是否要上传。那么再组件中就应该声明:
 
  ```javascript
- export const interceptors = ['beforeUpload']
+ export const defaultIntercepters = { beforeUpload: () => true }
  ```
 
 ### defaultListeners
@@ -136,7 +136,7 @@ export const render({ state, identifiers, children }) = {
 
 ### render
 
-与 react 的 render 函数不同的是，lego 的 render 是个纯函数。它的第一参数应该包含 `state children instance listeners wrappers interceptors`。
+与 react 的 render 函数不同的是，lego 的 render 是个纯函数。它的第一参数应该包含 `state children instance listeners wrappers intercepters`。
 
 ## License
 

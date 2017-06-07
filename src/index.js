@@ -22,7 +22,7 @@ export function wrap(DeclarativeComponent) {
   const {
     displayName,
     defaultStateTypes = {},
-    getDefaultState = () => {},
+    getDefaultState = () => ({}),
     defaultListeners = {},
     defaultIntercepters = {},
     defaultWrappers = {},
@@ -123,7 +123,6 @@ export function wrap(DeclarativeComponent) {
     }
 
     render() {
-      // 要求所有 text 必须符合 format.js 里面提出的 icu 写法。
       const wrappers = mapValues(defaultWrappers, (wrapper, name) => (this.props[name] === undefined ? wrapper : this.props[name]))
       return render({
         ...this.pickRenderArg(),
