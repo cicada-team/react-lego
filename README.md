@@ -26,7 +26,7 @@ react-lego(以下简称 lego) 相比于传统的 react 组件，最主要的差�
   export const getDefaultState = () => ({/* 默认的 state */})
 
   export function initialize() {
-    // 返回一个对象，改对象将作为 instance 参数注入到所有函数中。可将 instance 作为数据缓存
+    // 返回一个对象，该对象将作为 instance 参数注入到所有函数中。可将 instance 作为数据缓存
     return {}
   }
 
@@ -47,7 +47,7 @@ react-lego(以下简称 lego) 相比于传统的 react 组件，最主要的差�
   }
 
   export const identifiers = {
-    // 例如 Tabs 下的 TabPane。Input 的 Prefix 这种占位符式的组件需要在这里声明
+    // 例如 Tabs 下的 TabPane，Input 的 Prefix 这种占位符式的组件需要在这里声明
   }
 
   export function render({state, children, instance, listeners, wrappers, intercepters}) {
@@ -76,7 +76,7 @@ export const defaultStateTypes = {
 
 ### initialize
 
-组件初始化时调用，放回的对象会贯穿组件的整个生命周期。可以在对象上存放缓存数据。
+组件初始化时调用，返回的对象会贯穿组件的整个生命周期。可以在对象上存放缓存数据。
 
 ### defaultIntercepters
 
